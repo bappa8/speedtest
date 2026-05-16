@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080b0f;
+            --surface: #0e1318;
+            --border: rgba(0,255,180,0.12);
+            --accent: #00ffb4;
+            --accent2: #00aaff;
+            --red: #ff3c5a;
+            --text: #e0f0ea;
+            --muted: rgba(224,240,234,0.35);
+            --font-display: 'Rajdhani', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font-display);
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 36px 20px 80px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(0,255,180,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,180,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none; z-index: 0;
+        }
+        .orb1 { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 300px; background: radial-gradient(ellipse, rgba(0,255,180,0.07) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+        .orb2 { position: fixed; bottom: -100px; right: -100px; width: 400px; height: 400px; background: radial-gradient(ellipse, rgba(0,170,255,0.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+
+        .wrapper { position: relative; z-index: 1; width: 100%; max-width: 860px; }
+
+        /* Header */
+        header { text-align: center; margin-bottom: 32px; }
+        .logo { display: inline-flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 46px; height: 46px; border: 2px solid var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 0 20px rgba(0,255,180,0.2); }
+        h1 { font-size: 2.6rem; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); text-shadow: 0 0 30px rgba(0,255,180,0.4); }
+
+        /* Main two-column layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 370px 1fr;
+            gap: 28px;
+            align-items: start;
+            margin-bottom: 22px;
+        }
+
+        /* Left: speedometer + button */
+        .left-panel { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+        .speedometer { position: relative; width: 360px; height: 210px; }
+        .speedometer canvas { position: absolute; top: 0; left: 0; }
+        .speed-display { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; width: 100%; }
+        .speed-number { font-family: var(--font-mono); font-size: 3.8rem; font-weight: 400; color: var(--accent); text-shadow: 0 0 20px rgba(0,255,180,0.5); line-height: 1; }
+        .speed-unit { font-family: var(--font-mono); font-size: 0.9rem; color: var(--muted); letter-spacing: 2px; }
+        .speed-label { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
+
+        /* Button */
+        .btn {
+            font-family: var(--font-display); font-size: 1.25rem; font-weight: 700;
+            letter-spacing: 4px; text-transform: uppercase;
+            padding: 16px 64px; border: 2px solid var(--accent); border-radius: 50px;
+            background: transparent; color: var(--accent); cursor: pointer;
+            position: relative; overflow: hidden; transition: all 0.3s;
+            box-shadow: 0 0 30px rgba(0,255,180,0.15), inset 0 0 30px rgba(0,255,180,0.03);
+        }
+        .btn::before { content: ''; position: absolute; inset: 0; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s; z-index: -1; }
+        .btn:hover { color: #080b0f; box-shadow: 0 0 50px rgba(0,255,180,0.4); }
+        .btn:hover::before { transform: scaleX(1); }
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+        .btn:disabled::before { display: none; }
+        .btn:disabled:hover { color: var(--accent); }
+
+        .progress-wrap { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; display: none; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); width: 0%; transition: width 0.4s ease; box-shadow: 0 0 10px var(--accent); }
+
+        /* Right panel */
+        .right-panel { display: flex; flex-direction: column; gap: 14px; }
+
+        /* Server / Client info */
+        .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+        .info-card-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .info-card-icon.server { background: rgba(0,170,255,0.1); border: 1px solid rgba(0,170,255,0.25); }
+        .info-card-icon.client { background: rgba(0,255,180,0.08); border: 1px solid rgba(0,255,180,0.2); }
+        .info-card-body { flex: 1; min-width: 0; }
+        .info-card-title { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; }
+        .info-card-name { font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .info-card-meta { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--muted); }
+        .status-dot.active { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: pulse 1.4s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* Stats grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+        .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; position: relative; overflow: hidden; transition: border-color 0.3s; }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--card-color, var(--accent)), transparent); opacity: 0.5; }
+        .stat-card.active { border-color: var(--card-color, var(--accent)); }
+        .stat-card.active::before { opacity: 1; }
+        .stat-icon { font-size: 1.2rem; margin-bottom: 7px; }
+        .stat-label { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+        .stat-value { font-family: var(--font-mono); font-size: 1.8rem; color: var(--card-color, var(--accent)); text-shadow: 0 0 12px var(--card-color, rgba(0,255,180,0.3)); line-height: 1; }
+        .stat-unit { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+        .stat-bar { height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .stat-bar-fill { height: 100%; background: var(--card-color, var(--accent)); border-radius: 2px; width: 0%; transition: width 0.6s ease; box-shadow: 0 0 8px var(--card-color, var(--accent)); }
+
+        footer { position: fixed; bottom: 16px; left: 0; right: 0; text-align: center; font-family: var(--font-mono); font-size: 0.78rem; color: rgba(224,240,234,0.2); z-index: 10; }
+
+        @media (max-width: 760px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .speedometer { width: 300px; height: 176px; }
+            .speed-number { font-size: 3rem; }
+            .left-panel { width: 100%; }
+            h1 { font-size: 1.9rem; }
+        }
+        @media (max-width: 480px) {
+            .info-row { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
+            .stat-value { font-size: 1.4rem; }
+            .btn { padding: 14px 40px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb1"></div>
+    <div class="orb2"></div>
+    <div class="wrapper">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <h1>Speed Test</h1>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <!-- LEFT: Gauge + Button -->
+            <div class="left-panel">
+                <div class="speedometer">
+                    <canvas id="gaugeCanvas" width="360" height="210"></canvas>
+                    <div class="speed-display">
+                        <div class="speed-number" id="speedNumber">0.0</div>
+                        <div class="speed-unit">Mbps</div>
+                        <div class="speed-label" id="speedLabel">READY</div>
+                    </div>
+                </div>
+                <button class="btn" id="goBtn" onclick="startTest()">GO</button>
+                <div class="progress-wrap" id="progressWrap">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Server/Client + Stats -->
+            <div class="right-panel">
+                <div class="info-row">
+                    <div class="info-card">
+                        <div class="info-card-icon server">🖥️</div>
+                        <div class="info-card-body">
+                            <div class="info-card-title">Server</div>
+                            <div class="info-card-name" id="serverName">—</div>
+                            <div class="info-card-meta" id="serverMeta">Tap GO to detect</div>
+                        </div>
+                        <div class="status-dot" id="serverDot"></div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon client">📱</div>
+                        <div class="info-card-body">
+                            <div class="info-card-title">Client</div>
+                            <div class="info-card-name" id="clientName">—</div>
+                            <div class="info-card-meta" id="clientMeta">Detecting...</div>
+                        </div>
+                        <div class="status-dot" id="clientDot"></div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card" id="card-ping" style="--card-color:#00ffb4">
+                        <div class="stat-icon">📶</div>
+                        <div class="stat-label">Ping</div>
+                        <div class="stat-value" id="val-ping">—</div>
+                        <div class="stat-unit">milliseconds</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" id="bar-ping"></div></div>
+                    </div>
+                    <div class="stat-card" id="card-jitter" style="--card-color:#ffd700">
+                        <div class="stat-icon">〰️</div>
+                        <div class="stat-label">Jitter</div>
+                        <div class="stat-value" id="val-jitter">—</div>
+                        <div class="stat-unit">milliseconds</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" id="bar-jitter"></div></div>
+                    </div>
+                    <div class="stat-card" id="card-download" style="--card-color:#00aaff">
+                        <div class="stat-icon">⬇️</div>
+                        <div class="stat-label">Download</div>
+                        <div class="stat-value" id="val-download">—</div>
+                        <div class="stat-unit">Mbps</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" id="bar-download"></div></div>
+                    </div>
+                    <div class="stat-card" id="card-upload" style="--card-color:#ff3c5a">
+                        <div class="stat-icon">⬆️</div>
+                        <div class="stat-label">Upload</div>
+                        <div class="stat-value" id="val-upload">—</div>
+                        <div class="stat-unit">Mbps</div>
+                        <div class="stat-bar"><div class="stat-bar-fill" id="bar-upload"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>&copy; Bappa Ghosh. All rights reserved.</footer>
+
+    <script>
+        const canvas = document.getElementById('gaugeCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentSpeed = 0, targetSpeed = 0;
+
+        function drawGauge(value, maxVal = 200) {
+            const W = canvas.width, H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+            const cx = W / 2, cy = H - 18;
+            const r = 155;
+            ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 0);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 18; ctx.lineCap = 'round'; ctx.stroke();
+            for (let i = 0; i <= 10; i++) {
+                const a = Math.PI + (i / 10) * Math.PI;
+                const inner = i % 5 === 0 ? r - 26 : r - 18;
+                ctx.beginPath();
+                ctx.moveTo(cx + Math.cos(a) * (r - 9), cy + Math.sin(a) * (r - 9));
+                ctx.lineTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+                ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = i % 5 === 0 ? 2.5 : 1.2; ctx.stroke();
+            }
+            ctx.font = '600 11px Rajdhani, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.textAlign = 'center';
+            [0,50,100,150,200].forEach((v, i) => {
+                const a = Math.PI + (i / 4) * Math.PI;
+                ctx.fillText(v, cx + Math.cos(a) * (r - 36), cy + Math.sin(a) * (r - 36) + 4);
+            });
+            const pct = Math.min(value / maxVal, 1);
+            const valA = Math.PI + pct * Math.PI;
+            const grad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
+            grad.addColorStop(0, '#00ffb4'); grad.addColorStop(0.5, '#00ddff'); grad.addColorStop(1, '#0088ff');
+            ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, valA);
+            ctx.strokeStyle = grad; ctx.lineWidth = 18; ctx.lineCap = 'round'; ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, valA);
+            ctx.strokeStyle = 'rgba(0,255,180,0.12)'; ctx.lineWidth = 32; ctx.stroke();
+            const nx = cx + Math.cos(valA) * (r - 22), ny = cy + Math.sin(valA) * (r - 22);
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(nx, ny);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+            ctx.fillStyle = '#00ffb4'; ctx.shadowColor = '#00ffb4'; ctx.shadowBlur = 14; ctx.fill(); ctx.shadowBlur = 0;
+        }
+
+        function animateGauge() {
+            currentSpeed += (targetSpeed - currentSpeed) * 0.07;
+            drawGauge(currentSpeed);
+            document.getElementById('speedNumber').textContent = currentSpeed.toFixed(1);
+            requestAnimationFrame(animateGauge);
+        }
+        animateGauge();
+
+        function setProgress(pct) { document.getElementById('progressFill').style.width = pct + '%'; }
+        function setCard(id, active) { document.getElementById('card-' + id).classList.toggle('active', active); }
+        function setVal(id, val) { document.getElementById('val-' + id).textContent = val === null ? '—' : val; }
+        function setBar(id, pct) { document.getElementById('bar-' + id).style.width = Math.min(pct, 100) + '%'; }
+        function setDot(id, active) { document.getElementById(id + 'Dot').className = 'status-dot' + (active ? ' active' : ''); }
+
+        async function detectClient() {
+            try {
+                const res = await fetch('https://ipwho.is/', { cache: 'no-store' });
+                const d = await res.json();
+                if (d.success && d.ip) {
+                    document.getElementById('clientName').textContent = d.city ? `${d.city}, ${d.country}` : d.country || 'Unknown';
+                    document.getElementById('clientMeta').textContent = `${d.ip} • ${d.connection?.isp || ''}`;
+                    setDot('client', false); return;
+                }
+            } catch(e) {}
+            try {
+                const res = await fetch('https://cloudflare.com/cdn-cgi/trace');
+                const text = await res.text();
+                const obj = Object.fromEntries(text.trim().split('\n').filter(l=>l.includes('=')).map(l=>l.split('=')));
+                document.getElementById('clientName').textContent = obj.loc || 'Unknown';
+                document.getElementById('clientMeta').textContent = obj.ip || '';
+            } catch(e) {
+                document.getElementById('clientName').textContent = 'Unknown';
+                document.getElementById('clientMeta').textContent = 'Could not detect';
+            }
+            setDot('client', false);
+        }
+
+        async function measurePing(count = 10) {
+            const url = 'https://speed.cloudflare.com/__down?bytes=0';
+            const times = [];
+            for (let i = 0; i < count; i++) {
+                const t0 = performance.now();
+                try { await fetch(url + '&r=' + Math.random(), { method: 'HEAD', cache: 'no-store', mode: 'no-cors' }); } catch(e) {}
+                times.push(performance.now() - t0);
+                await new Promise(r => setTimeout(r, 60));
+            }
+            times.sort((a,b) => a - b);
+            const trimmed = times.slice(1, -1);
+            const avg = trimmed.reduce((a,b) => a+b, 0) / trimmed.length;
+            const jitter = Math.max(...trimmed) - Math.min(...trimmed);
+            return { ping: Math.round(avg), jitter: Math.round(jitter) };
+        }
+
+        async function measureDownload() {
+            const chunks = [1_000_000, 5_000_000, 10_000_000];
+            let totalBytes = 0, totalTime = 0;
+            for (const bytes of chunks) {
+                try {
+                    const t0 = performance.now();
+                    const res = await fetch(`https://speed.cloudflare.com/__down?bytes=${bytes}&r=${Math.random()}`, { cache: 'no-store' });
+                    const buf = await res.arrayBuffer();
+                    const dt = (performance.now() - t0) / 1000;
+                    totalBytes += buf.byteLength; totalTime += dt;
+                    targetSpeed = (buf.byteLength * 8 / 1_000_000) / dt;
+                } catch(e) {}
+            }
+            return totalTime > 0 ? (totalBytes * 8 / 1_000_000) / totalTime : 0;
+        }
+
+        // Upload: use fetch with no-cors + text/plain to avoid CORS preflight (works in Firefox & Chrome)
+        // Timing comes from performance.getEntriesByName() Resource Timing API
+        async function uploadChunk(sz) {
+            const data = new Uint8Array(sz);
+            for (let i = 0; i < sz; i += 4096) data[i] = Math.random() * 256 | 0;
+            const blob = new Blob([data], { type: 'text/plain' });
+            const url = 'https://speed.cloudflare.com/__up';
+            // Clear any previous timing entries for this URL
+            performance.clearResourceTimings();
+            const t0 = performance.now();
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    body: blob,
+                    mode: 'no-cors',
+                    cache: 'no-store'
+                });
+            } catch(e) { return null; }
+            const t1 = performance.now();
+            // Try Resource Timing API first (more accurate — excludes DNS/connect overhead on repeat calls)
+            const entries = performance.getEntriesByName(url);
+            let dt;
+            if (entries.length > 0) {
+                const e = entries[entries.length - 1];
+                // requestStart to responseEnd covers only actual transfer time
+                dt = (e.responseEnd - e.requestStart) / 1000;
+            } else {
+                dt = (t1 - t0) / 1000;
+            }
+            if (dt <= 0) return null;
+            return dt;
+        }
+
+        async function measureUpload() {
+            const chunks = [500_000, 1_000_000, 2_000_000];
+            let totalBytes = 0, totalTime = 0;
+            for (const sz of chunks) {
+                try {
+                    const dt = await uploadChunk(sz);
+                    if (dt !== null) {
+                        totalBytes += sz;
+                        totalTime += dt;
+                        targetSpeed = (sz * 8 / 1_000_000) / dt;
+                    }
+                } catch(e) {}
+            }
+            return totalTime > 0 ? (totalBytes * 8 / 1_000_000) / totalTime : 0;
+        }
+
+        async function startTest() {
+            const btn = document.getElementById('goBtn');
+            btn.disabled = true;
+            document.getElementById('progressWrap').style.display = 'block';
+            ['ping','jitter','download','upload'].forEach(id => { setVal(id, null); setBar(id, 0); setCard(id, false); });
+            targetSpeed = 0;
+
+            document.getElementById('speedLabel').textContent = 'CONNECTING';
+            setDot('server', true);
+            try {
+                const res = await fetch('https://speed.cloudflare.com/meta', { cache: 'no-store' });
+                const d = await res.json();
+                const loc = [d.city, d.country].filter(Boolean).join(', ') || 'Cloudflare';
+                document.getElementById('serverName').textContent = loc;
+                document.getElementById('serverMeta').textContent = `${d.isp || 'Cloudflare'} • ${d.ip || ''}`;
+            } catch(e) {
+                document.getElementById('serverName').textContent = 'Cloudflare';
+                document.getElementById('serverMeta').textContent = 'speed.cloudflare.com';
+            }
+            setDot('server', false);
+            setProgress(10);
+
+            setDot('client', true);
+            await detectClient();
+            setProgress(18);
+
+            document.getElementById('speedLabel').textContent = 'PING';
+            setCard('ping', true); setCard('jitter', true);
+            const { ping, jitter } = await measurePing();
+            setVal('ping', ping); setBar('ping', Math.max(0, 100 - ping));
+            setVal('jitter', jitter); setBar('jitter', Math.max(0, 100 - jitter * 3));
+            setCard('ping', false); setCard('jitter', false);
+            setProgress(35);
+
+            document.getElementById('speedLabel').textContent = 'DOWNLOAD';
+            setCard('download', true);
+            const dl = await measureDownload();
+            setVal('download', dl.toFixed(1));
+            setBar('download', Math.min((dl / 200) * 100, 100));
+            setCard('download', false);
+            targetSpeed = 0;
+            setProgress(65);
+
+            document.getElementById('speedLabel').textContent = 'UPLOAD';
+            setCard('upload', true);
+            const ul = await measureUpload();
+            setVal('upload', ul.toFixed(1));
+            setBar('upload', Math.min((ul / 100) * 100, 100));
+            setCard('upload', false);
+            targetSpeed = 0;
+            setProgress(100);
+
+            document.getElementById('speedLabel').textContent = 'DONE';
+            targetSpeed = dl;
+            btn.disabled = false;
+            btn.textContent = 'RETEST';
+        }
+
+        drawGauge(0);
+        detectClient();
+    </script>
+</body>
+</html>
