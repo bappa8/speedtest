@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Internet Speed Test</title>
   <style>
     :root {
       --text: #f8fbff;
-      --muted: #9bb0d1;
-      --download: #2f8cff;
-      --upload: #8d68ff;
-      --ping: #36c3ff;
-      --accent: #5f8fff;
+      --muted: #a9b9de;
+      --download: #45a3ff;
+      --upload: #a66bff;
+      --ping: #34e1ff;
+      --accent: #78a6ff;
       --ok: #81f0b4;
       --warn: #ffd97a;
       --danger: #ff8f8f;
+      --bg-deep: #02040b;
+      --bg-deeper: #050816;
+      --panel-top: rgba(7, 10, 22, 0.98);
+      --panel-bottom: rgba(3, 6, 14, 0.99);
+      --glow-blue: rgba(69, 163, 255, 0.30);
+      --glow-purple: rgba(166, 107, 255, 0.24);
+      --glow-cyan: rgba(52, 225, 255, 0.22);
     }
 
     * { box-sizing: border-box; }
@@ -25,9 +32,10 @@
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at top center, rgba(77, 119, 255, 0.12), transparent 28%),
-        radial-gradient(circle at bottom left, rgba(141, 104, 255, 0.10), transparent 30%),
-        linear-gradient(180deg, #08101d 0%, #040810 100%);
+        radial-gradient(circle at 15% 10%, rgba(69, 163, 255, 0.14), transparent 24%),
+        radial-gradient(circle at 85% 15%, rgba(166, 107, 255, 0.14), transparent 26%),
+        radial-gradient(circle at 50% 100%, rgba(52, 225, 255, 0.08), transparent 28%),
+        linear-gradient(180deg, var(--bg-deeper) 0%, var(--bg-deep) 100%);
     }
 
     body {
@@ -44,12 +52,13 @@
     .panel {
       position: relative;
       overflow: hidden;
-      background: linear-gradient(180deg, rgba(13, 20, 38, 0.96), rgba(8, 13, 25, 0.98));
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: linear-gradient(180deg, var(--panel-top), var(--panel-bottom));
+      border: 1px solid rgba(133, 161, 255, 0.10);
       border-radius: 28px;
       padding: 42px 42px 28px;
       box-shadow:
-        0 24px 70px rgba(0, 0, 0, 0.45),
+        0 28px 90px rgba(0, 0, 0, 0.62),
+        0 0 0 1px rgba(83, 115, 255, 0.05),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(14px);
     }
@@ -65,17 +74,17 @@
     }
 
     .panel::before {
-      width: 280px;
-      height: 280px;
-      background: rgba(47, 140, 255, 0.17);
-      top: -90px;
-      right: -80px;
+      width: 320px;
+      height: 320px;
+      background: var(--glow-blue);
+      top: -110px;
+      right: -90px;
     }
 
     .panel::after {
-      width: 240px;
-      height: 240px;
-      background: rgba(141, 104, 255, 0.13);
+      width: 260px;
+      height: 260px;
+      background: var(--glow-purple);
       bottom: -120px;
       left: -70px;
     }
@@ -87,7 +96,12 @@
       text-align: center;
       font-size: clamp(2rem, 4vw, 3.3rem);
       letter-spacing: 0.01em;
-      font-weight: 700;
+      font-weight: 800;
+      background: linear-gradient(90deg, #f8fbff 0%, #7dc5ff 40%, #b58cff 72%, #7af2ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 26px rgba(103, 162, 255, 0.18);
     }
 
     .divider {
@@ -97,8 +111,8 @@
       width: min(92%, 860px);
       margin: 22px auto 38px;
       border-radius: 999px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), rgba(47,140,255,0.30), rgba(255,255,255,0.12), transparent);
-      box-shadow: 0 0 30px rgba(47, 140, 255, 0.12);
+      background: linear-gradient(90deg, transparent, rgba(125,197,255,0.22), rgba(166,107,255,0.36), rgba(52,225,255,0.34), rgba(125,197,255,0.18), transparent);
+      box-shadow: 0 0 34px rgba(82, 140, 255, 0.20);
     }
 
     .content {
@@ -117,12 +131,38 @@
     }
 
     .metric {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: linear-gradient(180deg, rgba(13, 18, 34, 0.92), rgba(7, 10, 20, 0.96));
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 22px;
       padding: 24px 22px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 12px 30px rgba(0,0,0,0.28);
       min-height: 154px;
+    }
+
+    .metric.download {
+      border-color: rgba(69, 163, 255, 0.22);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 12px 30px rgba(0,0,0,0.28),
+        0 0 28px rgba(69, 163, 255, 0.08);
+    }
+
+    .metric.upload {
+      border-color: rgba(166, 107, 255, 0.22);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 12px 30px rgba(0,0,0,0.28),
+        0 0 28px rgba(166, 107, 255, 0.08);
+    }
+
+    .metric.ping {
+      border-color: rgba(52, 225, 255, 0.22);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 12px 30px rgba(0,0,0,0.28),
+        0 0 28px rgba(52, 225, 255, 0.08);
     }
 
     .label {
@@ -148,9 +188,9 @@
       transform: translateY(-1px);
     }
 
-    .download .label { color: var(--download); }
-    .upload .label { color: var(--upload); }
-    .ping .label { color: var(--ping); }
+    .download .label { color: var(--download); text-shadow: 0 0 16px rgba(69, 163, 255, 0.22); }
+    .upload .label { color: var(--upload); text-shadow: 0 0 16px rgba(166, 107, 255, 0.22); }
+    .ping .label { color: var(--ping); text-shadow: 0 0 16px rgba(52, 225, 255, 0.22); }
 
     .value {
       margin-top: 12px;
@@ -161,17 +201,35 @@
     }
 
     .number {
-      font-size: clamp(2.7rem, 5vw, 4rem);
-      font-weight: 700;
+      font-size: clamp(2.8rem, 5vw, 4.1rem);
+      font-weight: 800;
       letter-spacing: -0.03em;
       line-height: 0.95;
       min-width: 120px;
+      color: #f8fbff;
+      text-shadow: 0 0 22px rgba(255,255,255,0.08);
+    }
+
+    .download .number {
+      color: #8fcdff;
+      text-shadow: 0 0 24px rgba(69, 163, 255, 0.34);
+    }
+
+    .upload .number {
+      color: #caa8ff;
+      text-shadow: 0 0 24px rgba(166, 107, 255, 0.34);
+    }
+
+    .ping .number {
+      color: #93f2ff;
+      text-shadow: 0 0 24px rgba(52, 225, 255, 0.34);
     }
 
     .unit {
       font-size: 1.2rem;
-      color: var(--muted);
+      color: #bfd0f2;
       padding-bottom: 8px;
+      text-shadow: 0 0 14px rgba(255,255,255,0.04);
     }
 
     .action-wrap {
@@ -184,15 +242,18 @@
       width: 220px;
       height: 220px;
       border-radius: 50%;
-      border: 3px solid #3c77ff;
-      background: radial-gradient(circle at 30% 30%, rgba(47,140,255,0.18), rgba(47,140,255,0.04));
-      color: var(--accent);
+      border: 3px solid rgba(120, 166, 255, 0.9);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(69,163,255,0.28), rgba(166,107,255,0.10) 48%, rgba(47,140,255,0.05) 70%),
+        rgba(8, 12, 24, 0.9);
+      color: #9bc0ff;
       font-size: clamp(1.8rem, 4vw, 3rem);
       letter-spacing: 0.04em;
       cursor: pointer;
       box-shadow:
-        0 0 0 10px rgba(47, 140, 255, 0.05),
-        0 18px 50px rgba(26, 67, 187, 0.22),
+        0 0 0 10px rgba(47, 140, 255, 0.06),
+        0 18px 50px rgba(26, 67, 187, 0.28),
+        0 0 28px rgba(120, 166, 255, 0.18),
         inset 0 0 24px rgba(255,255,255,0.06);
       transition: transform 0.22s ease, box-shadow 0.22s ease, color 0.22s ease, opacity 0.22s ease;
     }
@@ -203,7 +264,7 @@
         0 0 0 14px rgba(47, 140, 255, 0.06),
         0 20px 60px rgba(26, 67, 187, 0.28),
         0 0 30px rgba(47, 140, 255, 0.26);
-      color: #79a4ff;
+      color: #d0deff;
     }
 
     .again-btn:active:not(:disabled) {
@@ -238,7 +299,7 @@
       margin-top: 26px;
       display: grid;
       gap: 12px;
-      color: #d7e3f8;
+      color: #e3edff;
       font-size: 1.05rem;
     }
 
@@ -246,15 +307,16 @@
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      color: #d9e4f7;
+      color: #dde8ff;
       line-height: 1.5;
+      text-shadow: 0 0 16px rgba(109, 138, 255, 0.10);
     }
 
     .detail .bullet {
       width: 18px;
       text-align: center;
-      color: #8bb7ff;
-      filter: drop-shadow(0 0 10px rgba(47,140,255,0.35));
+      color: #8bd2ff;
+      filter: drop-shadow(0 0 12px rgba(47,140,255,0.40));
       flex: 0 0 18px;
       margin-top: 1px;
     }
@@ -263,8 +325,8 @@
       margin-top: 18px;
       padding: 14px 16px;
       border-radius: 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(10,14,28,0.82);
+      border: 1px solid rgba(128,150,255,0.10);
       color: #d6e6ff;
       line-height: 1.55;
     }
@@ -282,7 +344,8 @@
       z-index: 1;
       margin-top: 26px;
       text-align: center;
-      color: rgba(221, 232, 255, 0.72);
+      color: rgba(208, 222, 255, 0.82);
+      text-shadow: 0 0 12px rgba(102, 160, 255, 0.10);
       font-size: 0.98rem;
       letter-spacing: 0.02em;
     }
@@ -327,7 +390,7 @@
       }
     }
   </style>
-<script type='text/javascript' nonce='VEVhcWh+bXa0WrYILxBjxw==' src='https://arena.ai/OHZ_ddulTmviCmA30UhRZXuBZeMdhwYX2S5jOdHZqSO0r1v0doGzzGTnR-Uvxoe5FLzTEbQIxn9RfdL9DA6JlnmeogshSrlx4NzjgiHaJIZDShZNoIE6hI274coPBpwsx99hogKk6YRmJB37PGRCwjP49fcRyN3fqIdkC-KLzG59JIfmWAcfKzUBQxmV9LwgMBVR-EDGMfu9zmtZ6oNQwkj0aSFCW4IYVF5v_aZm0cppkVBzOvOLdFV-8rptfP4xHN-EGFeyLXoWZXU2IcSCc-vPr6DRx_ID5it2H34MXkMqGcxDMp1NoLaIkDdvgOfyxtdiEZK5Ka89fA_97PRrUOjjb7hc7R1U3vdkGixf7gbsdW_RWCCMM_fJfDBCvZXn-rwcMeD17DbRKnSOsNT2bZuiy_UYJ-av5GejOO-M__VQO-QJujgf46BAuuqinK8YitpEOPoEEBWdDAcqspKJmESX9MLoBJb0ngaMrUs7Em3N60IducEkbSqLFdieA1KLxsZ1C9Wt7abALKT5r37kPg'></script></head>
+</head>
 <body>
   <main class="page">
     <section class="panel">
@@ -526,7 +589,7 @@
       againBtn.disabled = true;
       againBtn.classList.add('testing');
       againBtn.textContent = 'TESTING';
-      setStatus('Running a real live speed test against Cloudflare edge servers… Please wait.', 'running');
+      setStatus('');
 
       try {
         activeTest = new SpeedTestClass({
@@ -585,5 +648,5 @@
       }
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ffda6e1de74f2ef',t:'MTc3OTQ3MjEwNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
